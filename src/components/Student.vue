@@ -10,6 +10,12 @@
         <my-model v-model:show="dialogVisibleAverage">
             <div>{{ averageEvalition }} Баллов</div>
         </my-model>
+        <button type="button" @click="showDialogGraph">Визуализация суммы баллов за все предметы</button>
+        <my-model v-model:show="dialogVisibleGraph">
+            <div>
+            <apexchart width="700" type="bar" :options="chartOptions" :series="series"></apexchart>
+        </div>
+        </my-model>
         <h2>Предметы:</h2>
         <div v-for="subject in data.subjects" :key="subject.guid">
                  <info-student
@@ -22,15 +28,28 @@
 import axios from 'axios';
 import MyModel from './UI/MyModel.vue';
 import InfoStudent from './InfoStudent.vue';
+import VueApexCharts from "vue3-apexcharts";
     export default {
-  components: { MyModel, InfoStudent },
+  components: { MyModel, InfoStudent, apexchart: VueApexCharts, },
         data(){
             return {
                 guid: "",
                 data: {},
                 averageEvalition: 0,
                 dialogVisible: false,
-                dialogVisibleAverage: false
+                dialogVisibleAverage: false,
+                dialogVisibleGraph: false,
+                series: [
+                    {
+                        name: "Сумма баллов",
+                        data: [0, 0, 0, 0, 0, 0, 0, 0],
+                    },
+                ],
+                chartOptions: {
+                    xaxis: {
+                        categories: [0, 0, 0, 0, 0, 0, 0, 0],
+                    },
+                },
             }
         },
         methods: {
@@ -45,15 +64,34 @@ import InfoStudent from './InfoStudent.vue';
             {
                 this.dialogVisibleAverage = true;
                 axios.get("https://localhost:7263/Student/average/" + this.data.guid).then(response => this.averageEvalition = response.data)
+            },
+            showDialogGraph()
+            {
+                this.dialogVisibleGraph = true;
+                axios.get("https://localhost:7263/Student/dataAllSubjects/" + this.data.guid).then(response => {
+                    this.chartOptions = {
+                        xaxis: {
+                            categories: response.data.subjects,
+                        },
+                };
+                this.series = [
+                    {
+                        data: response.data.sumEvalitions,
+                    },
+                ];
+
+                })
+                
+                
             }
         },
         async beforeMount(){
             await this.getStudent()
             //console.log(this.data)
         },
-        /*logout() {
+        logout() {
             localStorage.removeItem('student');
-        },*/
+        },
     }
 
 </script>
