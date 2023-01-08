@@ -63,10 +63,10 @@ export default {
       data,
       submit,
     };
-  } /*,
-        logout() {
+  } ,
+        /*logout() {
             localStorage.removeItem('student');
-        },*/,
+        },*/
 };
 </script>
 
